@@ -1,8 +1,8 @@
 module Main exposing (..)
 
-import Html exposing (Html, img, div, button, h2, text)
-import Html.Events exposing (onClick)
-import Html.Attributes exposing (src)
+import Html exposing (Html, img, div, button, h2, text, input)
+import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing (src, type_, placeholder, style)
 import Http
 import Json.Decode as Decode
 
@@ -17,12 +17,12 @@ main =
 
 
 type alias Model =
-    { topic : String, gifUrl : String }
+    { topic : String, gifUrl : String, error : String }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "cats" "waiting.gif", Cmd.none )
+    ( Model "" "" "", getRandomGif "waiting" )
 
 
 
@@ -32,19 +32,23 @@ init =
 type Msg
     = MorePlease
     | NewGif (Result Http.Error String)
+    | TopicChanged String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        TopicChanged newTopic ->
+            ( { model | topic = newTopic }, Cmd.none )
+
         MorePlease ->
             ( model, getRandomGif model.topic )
 
         NewGif (Ok newUrl) ->
-            ( { model | gifUrl = newUrl }, Cmd.none )
+            ( { model | gifUrl = newUrl, error = "" }, Cmd.none )
 
-        NewGif (Err _) ->
-            ( model, Cmd.none )
+        NewGif (Err error) ->
+            ( { model | gifUrl = "", error = toString error }, Cmd.none )
 
 
 getRandomGif : String -> Cmd Msg
@@ -71,10 +75,23 @@ decodeGifUrl =
 view : Model -> Html Msg
 view model =
     div []
-        [ h2 [] [ text model.topic ]
-        , img [ src model.gifUrl ] []
-        , button [ onClick MorePlease ] [ text " Moar!!" ]
+        [ div []
+            [ div [] [ input [ type_ "text", onInput TopicChanged, placeholder "Search for a topic" ] [ text model.topic ] ]
+            , div [ myStyle ] [ img [ src model.gifUrl ] [] ]
+            , button [ onClick MorePlease ] [ text " Moar!!" ]
+            ]
+        , viewError model.error
         ]
+
+
+viewError : String -> Html Msg
+viewError error =
+    div [] [ text error ]
+
+
+myStyle : Html.Attribute msg
+myStyle =
+    style [ ( "max-width", "200px" ) ]
 
 
 
