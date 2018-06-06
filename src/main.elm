@@ -1,6 +1,7 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, h1, text, button)
+import Html exposing (Html, div, h1, text, button, img)
+import Html.Attributes exposing (src)
 import Html.Events exposing (onClick)
 import Random exposing (..)
 
@@ -56,8 +57,8 @@ doubleDieGenerator =
 view : Model -> Html Msg
 view model =
     div []
-        [ h1 [] [ text (toString model.die1Face) ]
-        , h1 [] [ text (toString model.die2Face) ]
+        [ img [ src ("../die_faces/" ++ (toString model.die1Face) ++ ".png") ] []
+        , img [ src ("../die_faces/" ++ (toString model.die2Face) ++ ".png") ] []
         , button [ onClick Roll ] [ text "Roll" ]
         ]
 
